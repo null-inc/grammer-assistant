@@ -16,6 +16,10 @@ export function rewriteText(
   text: string,
   setting: rewriteTextSetting,
 ): rewriteTextResponse {
+  if (!isWithinCharacterLimit(text)) {
+    throw new Error("Only 499 characters allowed");
+  }
+
   let textCopy = trimWhitespace(text);
 
   if (textCopy === "") {
@@ -55,6 +59,11 @@ function replaceGreeting(text: string): string {
   }
 
   return words.join(" ");
+}
+
+function isWithinCharacterLimit(text: string): boolean {
+  const chars = text.split("");
+  return chars.length > 500 ? false : true;
 }
 
 function formatRewriterResponse(

@@ -31,4 +31,16 @@ describe("rewriteText", () => {
       response: "Useful.",
     });
   });
+
+  it("rejects characters of more than 500.", () => {
+    const text = "a".repeat(501);
+
+    expect(() => rewriteText(text, "more-concise")).toThrow();
+  });
+
+  it("allows input with exactly 500 characters", () => {
+    const text = "a".repeat(500);
+
+    expect(() => rewriteText(text, "more-concise")).not.toThrow();
+  });
 });
