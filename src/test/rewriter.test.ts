@@ -17,4 +17,18 @@ describe("rewriteText", () => {
       response: "Hello i need this to be fixed.",
     });
   });
+
+  it("makes text more concise by removing simple filler words", () => {
+    expect(rewriteText("this is really very useful", "more-concise")).toEqual({
+      setting: "more-concise",
+      response: "This is useful.",
+    });
+  });
+
+  it("removes filler words regardless of casing", () => {
+    expect(rewriteText("Really very useful", "more-concise")).toEqual({
+      setting: "more-concise",
+      response: "Useful.",
+    });
+  });
 });

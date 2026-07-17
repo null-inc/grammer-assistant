@@ -3,10 +3,11 @@ import {
   rewriteTextSetting,
 } from "../types/rewriter.types";
 
-export function isValidSetting(value: string): value is rewriteTextSetting {
-  if (!value) return false;
+import { ensurePeriod, trimWhitespace, capitalize } from "../utils/text.utils";
+
+export function isValidSetting(value: unknown): value is rewriteTextSetting {
   if (typeof value !== "string") return false;
-  if (!value.trim().length) return false;
+  if (value.trim().length === 0) return false;
 
   return value === "more-professional" || value === "more-concise";
 }
@@ -15,26 +16,53 @@ export function rewriteText(
   text: string,
   setting: rewriteTextSetting,
 ): rewriteTextResponse {
-  let textCopy = text.trim();
+  let textCopy = trimWhitespace(text);
 
   if (textCopy === "") {
-    return {
-      setting: setting,
-      response: "",
-    };
+    return formatRewriterResponse("", setting);
   }
 
-  textCopy = textCopy.endsWith(".") ? textCopy : textCopy + ".";
+  if (setting === "more-professional") {
+    textCopy = replaceGreeting(textCopy);
+  } else if (setting === "more-concise") {
+    textCopy = removeFillerWords(textCopy);
+  }
 
-  textCopy = textCopy
-    .split(/\s+/)
-    .map((word) => (word.toLowerCase() === "hey" ? "hello" : word))
-    .join(" ");
+  textCopy = capitalize(textCopy);
+  textCopy = ensurePeriod(textCopy);
 
-  const result = textCopy.charAt(0).toUpperCase() + textCopy.slice(1);
+  return formatRewriterResponse(textCopy, setting);
+}
 
+function removeFillerWords(text: string): string {
+  const fillerWords = ["very", "really"];
+  const words = text.split(" ");
+
+  const filteredWords = words.filter((word) => {
+    return fillerWords.includes(word.toLowerCase()) ? false : true;
+  });
+
+  return filteredWords.join(" ");
+}
+
+function replaceGreeting(text: string): string {
+  const greetings = ["hey", "yo", "wassup"];
+  const words = text.split(" ");
+  const greeting = words[0];
+
+  if (greetings.includes(greeting.toLowerCase())) {
+    words[0] = "hello";
+  }
+
+  return words.join(" ");
+}
+
+function formatRewriterResponse(
+  value: string,
+  setting: rewriteTextSetting,
+): rewriteTextResponse {
   return {
     setting: setting,
-    response: result,
+    response: value,
   };
 }
