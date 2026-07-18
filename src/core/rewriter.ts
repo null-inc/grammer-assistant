@@ -17,7 +17,7 @@ export function rewriteText(
   setting: rewriteTextSetting,
 ): rewriteTextResponse {
   if (!isWithinCharacterLimit(text)) {
-    throw new Error("Only 499 characters allowed");
+    throw new Error("Input cannot exceed 500 characters.");
   }
 
   let textCopy = trimWhitespace(text);

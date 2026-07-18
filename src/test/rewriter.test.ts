@@ -32,10 +32,12 @@ describe("rewriteText", () => {
     });
   });
 
-  it("rejects characters of more than 500.", () => {
+  it("rejects input with more than 500 characters", () => {
     const text = "a".repeat(501);
 
-    expect(() => rewriteText(text, "more-concise")).toThrow();
+    expect(() => rewriteText(text, "more-concise")).toThrow(
+      "Input cannot exceed 500 characters.",
+    );
   });
 
   it("allows input with exactly 500 characters", () => {
