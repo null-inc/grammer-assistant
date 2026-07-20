@@ -19,21 +19,59 @@ function onSubmit() {
 </script>
 
 <template>
-  <main class="container">
-    <form class="row" @submit.prevent="onSubmit">
-      <input id="user-input" v-model="userInput" />
-      <select v-model="rewriteSetting">
-        <option value="more-professional">Professional</option>
-        <option value="more-concise">Concise</option>
-      </select>
-      <button type="submit">Submit</button>
-    </form>
-    <textarea
-      v-if="reviewState"
-      id="edited-text"
-      v-model="editedText"
-      name="edited-text"
-    ></textarea>
+  <main class="app-shell">
+    <section class="composer">
+      <div class="app-heading">
+        <p class="eyebrow">Grammar Assistant</p>
+        <h1>Quick rewrite review</h1>
+      </div>
+
+      <form class="rewrite-form" @submit.prevent="onSubmit">
+        <label class="field-label" for="user-input">Selected text</label>
+        <textarea
+          id="user-input"
+          v-model="userInput"
+          class="text-input"
+          maxlength="500"
+          rows="5"
+        ></textarea>
+
+        <div class="form-footer">
+          <label class="setting-field" for="rewrite-setting">
+            <span class="field-label">Mode</span>
+            <select id="rewrite-setting" v-model="rewriteSetting">
+              <option value="more-professional">More Professional</option>
+              <option value="more-concise">More Concise</option>
+            </select>
+          </label>
+
+          <p class="character-count">{{ userInput.length }} / 500</p>
+
+          <button type="submit">Rewrite</button>
+        </div>
+      </form>
+    </section>
+
+    <section v-if="reviewState" class="review-panel">
+      <article class="review-column">
+        <h2>Original</h2>
+        <p class="original-text">{{ reviewState.originalText }}</p>
+      </article>
+
+      <article class="review-column">
+        <h2>Rewrite</h2>
+        <textarea
+          id="edited-text"
+          v-model="editedText"
+          class="text-input edited-output"
+          name="edited-text"
+        ></textarea>
+      </article>
+    </section>
+
+    <section v-else class="empty-state">
+      <p>Paste or type a short text sample to start reviewing.</p>
+    </section>
   </main>
 </template>
 
@@ -44,8 +82,8 @@ function onSubmit() {
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #1c2430;
+  background: #f4f7f8;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -54,79 +92,282 @@ function onSubmit() {
   -webkit-text-size-adjust: 100%;
 }
 
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
+* {
+  box-sizing: border-box;
 }
 
-.row {
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(920px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40px 24px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.composer,
+.review-panel,
+.empty-state {
+  border: 1px solid #d9e3e7;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(32, 52, 66, 0.08);
+}
+
+.composer {
+  padding: 24px;
+}
+
+.app-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
 }
 
 h1 {
-  text-align: center;
+  margin: 0;
+  color: #14202b;
+  font-size: 1.65rem;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
-input,
-button,
-select {
+h2 {
+  margin: 0 0 12px;
+  color: #24313d;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
+.eyebrow,
+.field-label,
+.character-count {
+  margin: 0;
+  color: #657583;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.eyebrow,
+.field-label {
+  font-weight: 700;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+}
+
+.rewrite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.text-input,
+select,
+button {
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
+  border: 1px solid #cbd8de;
+  color: #182532;
   background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+.text-input {
+  width: 100%;
+  min-height: 132px;
+  padding: 14px;
+  resize: vertical;
+}
+
+.text-input:focus,
+select:focus {
+  border-color: #257b87;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 123, 135, 0.14);
+}
+
+.form-footer {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.setting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+select {
+  min-height: 42px;
+  padding: 0 36px 0 12px;
+  cursor: pointer;
+}
+
+.character-count {
+  align-self: center;
+  white-space: nowrap;
 }
 
 button {
+  min-height: 42px;
+  padding: 0 18px;
+  border-color: #257b87;
+  color: #ffffff;
+  background: #257b87;
+  font-weight: 700;
   cursor: pointer;
 }
 
 button:hover {
-  border-color: #396cd8;
+  border-color: #1d6570;
+  background: #1d6570;
 }
+
 button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+  background: #164f58;
 }
 
-input,
-button,
-select {
+button:focus {
   outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 123, 135, 0.18);
 }
 
-#user-input {
-  margin-right: 5px;
+.review-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.review-column {
+  min-width: 0;
+  padding: 20px;
+}
+
+.review-column + .review-column {
+  border-left: 1px solid #d9e3e7;
+}
+
+.original-text {
+  min-height: 132px;
+  margin: 0;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #e1e9ed;
+  color: #2f3d49;
+  background: #f7fafb;
+  white-space: pre-wrap;
+}
+
+.edited-output {
+  display: block;
+}
+
+.empty-state {
+  padding: 18px 20px;
+  color: #657583;
+}
+
+.empty-state p {
+  margin: 0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+    color: #edf3f5;
+    background: #10171d;
   }
 
-  a:hover {
-    color: #24c8db;
+  .composer,
+  .review-panel,
+  .empty-state {
+    border-color: #2c3a43;
+    background: #172128;
+    box-shadow: none;
   }
 
-  input,
-  button,
+  h1,
+  h2 {
+    color: #f1f6f7;
+  }
+
+  .eyebrow,
+  .field-label,
+  .character-count,
+  .empty-state {
+    color: #98a8b3;
+  }
+
+  .text-input,
   select {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+    border-color: #3a4a55;
+    color: #edf3f5;
+    background-color: #10171d;
   }
+
+  .original-text {
+    border-color: #2c3a43;
+    color: #d9e4e8;
+    background: #121c22;
+  }
+
+  .review-column + .review-column {
+    border-color: #2c3a43;
+  }
+
+  button,
+  button:hover,
   button:active {
-    background-color: #0f0f0f69;
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 680px) {
+  .app-shell {
+    padding: 20px 14px;
+  }
+
+  .composer {
+    padding: 18px;
+  }
+
+  .form-footer,
+  .review-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .character-count {
+    justify-self: start;
+  }
+
+  .review-column + .review-column {
+    border-top: 1px solid #d9e3e7;
+    border-left: 0;
+  }
+}
+
+@media (prefers-color-scheme: dark) and (max-width: 680px) {
+  .review-column + .review-column {
+    border-color: #2c3a43;
   }
 }
 </style>
