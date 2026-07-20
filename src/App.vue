@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 // import { invoke } from "@tauri-apps/api/core";
 import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
@@ -9,6 +9,20 @@ const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
 const editedText = ref("");
 const userInput = ref("");
+
+const activeText = computed({
+  get() {
+    return reviewState.value ? editedText.value : userInput.value;
+  },
+  set(value: string) {
+    if (reviewState.value) {
+      editedText.value = value;
+      return;
+    }
+
+    userInput.value = value;
+  },
+});
 
 function onSubmit() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -27,10 +41,12 @@ function onSubmit() {
       </div>
 
       <form class="rewrite-form" @submit.prevent="onSubmit">
-        <label class="field-label" for="user-input">Selected text</label>
+        <label class="field-label" for="review-text">
+          {{ reviewState ? "Rewrite" : "Selected text" }}
+        </label>
         <textarea
-          id="user-input"
-          v-model="userInput"
+          id="review-text"
+          v-model="activeText"
           class="text-input"
           maxlength="500"
           rows="5"
@@ -45,28 +61,18 @@ function onSubmit() {
             </select>
           </label>
 
-          <p class="character-count">{{ userInput.length }} / 500</p>
+          <p class="character-count">{{ activeText.length }} / 500</p>
 
-          <button type="submit">Rewrite</button>
+          <button type="submit">
+            {{ reviewState ? "Rewrite again" : "Rewrite" }}
+          </button>
         </div>
       </form>
     </section>
 
     <section v-if="reviewState" class="review-panel">
-      <article class="review-column">
-        <h2>Original</h2>
-        <p class="original-text">{{ reviewState.originalText }}</p>
-      </article>
-
-      <article class="review-column">
-        <h2>Rewrite</h2>
-        <textarea
-          id="edited-text"
-          v-model="editedText"
-          class="text-input edited-output"
-          name="edited-text"
-        ></textarea>
-      </article>
+      <h2>Original reference</h2>
+      <p class="original-text">{{ reviewState.originalText }}</p>
     </section>
 
     <section v-else class="empty-state">
@@ -254,32 +260,14 @@ button:focus {
 }
 
 .review-panel {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.review-column {
-  min-width: 0;
-  padding: 20px;
-}
-
-.review-column + .review-column {
-  border-left: 1px solid #d9e3e7;
+  padding: 18px 20px;
 }
 
 .original-text {
-  min-height: 132px;
   margin: 0;
-  padding: 14px;
-  border-radius: 8px;
-  border: 1px solid #e1e9ed;
   color: #2f3d49;
-  background: #f7fafb;
   white-space: pre-wrap;
-}
-
-.edited-output {
-  display: block;
+  overflow-wrap: anywhere;
 }
 
 .empty-state {
@@ -325,13 +313,7 @@ button:focus {
   }
 
   .original-text {
-    border-color: #2c3a43;
     color: #d9e4e8;
-    background: #121c22;
-  }
-
-  .review-column + .review-column {
-    border-color: #2c3a43;
   }
 
   button,
@@ -350,24 +332,12 @@ button:focus {
     padding: 18px;
   }
 
-  .form-footer,
-  .review-panel {
+  .form-footer {
     grid-template-columns: 1fr;
   }
 
   .character-count {
     justify-self: start;
-  }
-
-  .review-column + .review-column {
-    border-top: 1px solid #d9e3e7;
-    border-left: 0;
-  }
-}
-
-@media (prefers-color-scheme: dark) and (max-width: 680px) {
-  .review-column + .review-column {
-    border-color: #2c3a43;
   }
 }
 </style>
