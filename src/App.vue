@@ -1,50 +1,42 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+// import { invoke } from "@tauri-apps/api/core";
+import { createReviewState } from "./core/review-state";
+import { ReviewState } from "./types/review-state.types";
+import { rewriteTextSetting } from "./types/rewriter.types";
 
-const greetMsg = ref("");
-const name = ref("");
+const reviewState = ref<ReviewState | null>(null);
+const rewriteSetting = ref<rewriteTextSetting>("more-professional");
+const editedText = ref("");
+const userInput = ref("");
 
-async function greet() {
+function onSubmit() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  greetMsg.value = await invoke("greet", { name: name.value });
+  // greetMsg.value = await invoke("greet", { name: name.value });
+  reviewState.value = createReviewState(userInput.value, rewriteSetting.value);
+  editedText.value = reviewState.value.rewrittenText;
 }
 </script>
 
 <template>
   <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
-
-    <div class="row">
-      <a href="https://vite.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
+    <form class="row" @submit.prevent="onSubmit">
+      <input id="user-input" v-model="userInput" />
+      <select v-model="rewriteSetting">
+        <option value="more-professional">Professional</option>
+        <option value="more-concise">Concise</option>
+      </select>
+      <button type="submit">Submit</button>
     </form>
-    <p>{{ greetMsg }}</p>
+    <textarea
+      v-if="reviewState"
+      id="edited-text"
+      v-model="editedText"
+      name="edited-text"
+    ></textarea>
   </main>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-</style>
 <style>
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
@@ -71,30 +63,9 @@ async function greet() {
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
 .row {
   display: flex;
   justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
 }
 
 h1 {
@@ -102,7 +73,8 @@ h1 {
 }
 
 input,
-button {
+button,
+select {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -128,11 +100,12 @@ button:active {
 }
 
 input,
-button {
+button,
+select {
   outline: none;
 }
 
-#greet-input {
+#user-input {
   margin-right: 5px;
 }
 
@@ -147,7 +120,8 @@ button {
   }
 
   input,
-  button {
+  button,
+  select {
     color: #ffffff;
     background-color: #0f0f0f98;
   }
