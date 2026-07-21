@@ -37,7 +37,7 @@ function onSubmit() {
     <section class="composer">
       <div class="app-heading">
         <p class="eyebrow">Grammar Assistant</p>
-        <h1>Quick rewrite review</h1>
+        <h1>AI Rewrite</h1>
       </div>
 
       <form class="rewrite-form" @submit.prevent="onSubmit">
@@ -49,7 +49,7 @@ function onSubmit() {
           v-model="activeText"
           class="text-input"
           maxlength="500"
-          rows="5"
+          rows="4"
         ></textarea>
 
         <div class="form-footer">
@@ -74,22 +74,18 @@ function onSubmit() {
       <h2>Original reference</h2>
       <p class="original-text">{{ reviewState.originalText }}</p>
     </section>
-
-    <section v-else class="empty-state">
-      <p>Paste or type a short text sample to start reviewing.</p>
-    </section>
   </main>
 </template>
 
 <style>
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
 
-  color: #1c2430;
-  background: #f4f7f8;
+  color: #2d2a24;
+  background: #efe4c9;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -106,6 +102,13 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.58),
+      transparent 32%
+    ),
+    linear-gradient(135deg, #efe4c9, #e7dcc2);
 }
 
 button,
@@ -115,47 +118,58 @@ textarea {
 }
 
 .app-shell {
-  width: min(920px, 100%);
+  width: min(420px, 100%);
   min-height: 100vh;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
+  justify-content: flex-start;
 }
 
 .composer,
 .review-panel,
 .empty-state {
-  border: 1px solid #d9e3e7;
+  border: 1px solid #c9bea7;
   border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 18px 45px rgba(32, 52, 66, 0.08);
+  background:
+    linear-gradient(90deg, rgba(190, 83, 65, 0.18) 32px, transparent 33px),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 250, 235, 0.9) 0,
+      rgba(255, 250, 235, 0.9) 23px,
+      rgba(99, 129, 153, 0.13) 24px
+    ),
+    #f6ecd4;
+  box-shadow:
+    0 12px 26px rgba(74, 56, 32, 0.16),
+    inset 0 1px rgba(255, 255, 255, 0.7);
 }
 
 .composer {
-  padding: 24px;
+  padding: 14px 14px 14px 44px;
 }
 
 .app-heading {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 20px;
+  gap: 2px;
+  margin-bottom: 12px;
 }
 
 h1 {
   margin: 0;
-  color: #14202b;
-  font-size: 1.65rem;
+  color: #4b3524;
+  font-size: 1.05rem;
   line-height: 1.2;
   letter-spacing: 0;
 }
 
 h2 {
-  margin: 0 0 12px;
-  color: #24313d;
-  font-size: 0.95rem;
+  margin: 0 0 6px;
+  color: #6a4c35;
+  font-size: 0.82rem;
   line-height: 1.3;
   letter-spacing: 0;
 }
@@ -164,8 +178,8 @@ h2 {
 .field-label,
 .character-count {
   margin: 0;
-  color: #657583;
-  font-size: 0.82rem;
+  color: #725f4b;
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -181,16 +195,16 @@ h2 {
 .rewrite-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .text-input,
 select,
 button {
-  border-radius: 8px;
-  border: 1px solid #cbd8de;
-  color: #182532;
-  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #bcae91;
+  color: #2d2a24;
+  background-color: rgba(255, 249, 231, 0.86);
   transition:
     border-color 0.2s,
     box-shadow 0.2s,
@@ -199,22 +213,22 @@ button {
 
 .text-input {
   width: 100%;
-  min-height: 132px;
-  padding: 14px;
+  min-height: 104px;
+  padding: 10px;
+  line-height: 1.5;
   resize: vertical;
 }
 
 .text-input:focus,
 select:focus {
-  border-color: #257b87;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 123, 135, 0.14);
+  box-shadow: 0 0 0 3px rgba(49, 95, 138, 0.16);
 }
 
 .form-footer {
   display: grid;
-  grid-template-columns: minmax(190px, 1fr) auto auto;
-  gap: 12px;
+  grid-template-columns: minmax(150px, 1fr) auto auto;
+  gap: 8px;
   align-items: end;
 }
 
@@ -225,8 +239,19 @@ select:focus {
 }
 
 select {
-  min-height: 42px;
-  padding: 0 36px 0 12px;
+  appearance: none;
+  min-height: 34px;
+  padding: 0 30px 0 10px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #5b4a35 50%),
+    linear-gradient(135deg, #5b4a35 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 14px,
+    calc(100% - 11px) 14px;
+  background-repeat: no-repeat;
+  background-size:
+    5px 5px,
+    5px 5px;
   cursor: pointer;
 }
 
@@ -236,43 +261,43 @@ select {
 }
 
 button {
-  min-height: 42px;
-  padding: 0 18px;
-  border-color: #257b87;
-  color: #ffffff;
-  background: #257b87;
+  min-height: 34px;
+  padding: 0 12px;
+  border-color: #8d7350;
+  color: #fff8e7;
+  background: #8d7350;
   font-weight: 700;
   cursor: pointer;
 }
 
 button:hover {
-  border-color: #1d6570;
-  background: #1d6570;
+  border-color: #765f40;
+  background: #765f40;
 }
 
 button:active {
-  background: #164f58;
+  background: #604c33;
 }
 
 button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 123, 135, 0.18);
+  box-shadow: 0 0 0 3px rgba(49, 95, 138, 0.2);
 }
 
 .review-panel {
-  padding: 18px 20px;
+  padding: 12px 14px 12px 44px;
 }
 
 .original-text {
   margin: 0;
-  color: #2f3d49;
+  color: #514534;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
 .empty-state {
-  padding: 18px 20px;
-  color: #657583;
+  padding: 10px 14px 10px 44px;
+  color: #725f4b;
 }
 
 .empty-state p {
@@ -281,55 +306,75 @@ button:focus {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #edf3f5;
-    background: #10171d;
+    color: #2d2a24;
+    background: #d8ccb2;
+  }
+
+  body {
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(255, 255, 255, 0.42),
+        transparent 32%
+      ),
+      linear-gradient(135deg, #d8ccb2, #d1c4a8);
   }
 
   .composer,
   .review-panel,
   .empty-state {
-    border-color: #2c3a43;
-    background: #172128;
-    box-shadow: none;
+    border-color: #b9aa8d;
+    background:
+      linear-gradient(90deg, rgba(190, 83, 65, 0.2) 32px, transparent 33px),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255, 249, 231, 0.92) 0,
+        rgba(255, 249, 231, 0.92) 23px,
+        rgba(91, 124, 148, 0.15) 24px
+      ),
+      #f3e7cc;
+    box-shadow:
+      0 14px 30px rgba(34, 25, 13, 0.24),
+      inset 0 1px rgba(255, 255, 255, 0.58);
   }
 
   h1,
   h2 {
-    color: #f1f6f7;
+    color: #4b3524;
   }
 
   .eyebrow,
   .field-label,
   .character-count,
   .empty-state {
-    color: #98a8b3;
+    color: #725f4b;
   }
 
   .text-input,
   select {
-    border-color: #3a4a55;
-    color: #edf3f5;
-    background-color: #10171d;
+    border-color: #b7a98c;
+    color: #2d2a24;
+    background-color: rgba(255, 250, 235, 0.88);
   }
 
   .original-text {
-    color: #d9e4e8;
+    color: #514534;
   }
 
   button,
   button:hover,
   button:active {
-    color: #ffffff;
+    color: #fff8e7;
   }
 }
 
 @media (max-width: 680px) {
   .app-shell {
-    padding: 20px 14px;
+    padding: 10px;
   }
 
   .composer {
-    padding: 18px;
+    padding: 14px;
   }
 
   .form-footer {
