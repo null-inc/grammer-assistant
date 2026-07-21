@@ -30,6 +30,8 @@ function onSubmit() {
   reviewState.value = createReviewState(userInput.value, rewriteSetting.value);
   editedText.value = reviewState.value.rewrittenText;
 }
+
+function handleCopy() {}
 </script>
 
 <template>
@@ -63,9 +65,16 @@ function onSubmit() {
 
           <p class="character-count">{{ activeText.length }} / 500</p>
 
-          <button type="submit">
-            {{ reviewState ? "Rewrite again" : "Rewrite" }}
-          </button>
+          <div class="action-buttons">
+            <button class="primary-action" type="submit">Rewrite</button>
+            <button
+              class="secondary-action"
+              type="button"
+              @click.prevent="handleCopy"
+            >
+              Copy
+            </button>
+          </div>
         </div>
       </form>
     </section>
@@ -129,8 +138,7 @@ textarea {
 }
 
 .composer,
-.review-panel,
-.empty-state {
+.review-panel {
   border: 1px solid #c9bea7;
   border-radius: 8px;
   background:
@@ -227,7 +235,7 @@ select:focus {
 
 .form-footer {
   display: grid;
-  grid-template-columns: minmax(150px, 1fr) auto auto;
+  grid-template-columns: minmax(140px, 1fr) auto auto;
   gap: 8px;
   align-items: end;
 }
@@ -260,23 +268,51 @@ select {
   white-space: nowrap;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 button {
+  min-width: 76px;
   min-height: 34px;
   padding: 0 12px;
-  border-color: #8d7350;
-  color: #fff8e7;
-  background: #8d7350;
   font-weight: 700;
   cursor: pointer;
 }
 
-button:hover {
-  border-color: #765f40;
-  background: #765f40;
+.primary-action {
+  border-color: #8d7350;
+  color: #fff8e7;
+  background: linear-gradient(180deg, #9a805c, #806642);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.18),
+    0 2px 6px rgba(93, 69, 38, 0.18);
 }
 
-button:active {
+.primary-action:hover {
+  border-color: #765f40;
+  background: linear-gradient(180deg, #8c704c, #725836);
+}
+
+.primary-action:active {
   background: #604c33;
+}
+
+.secondary-action {
+  border-color: #bcae91;
+  color: #5b4a35;
+  background: rgba(255, 249, 231, 0.86);
+}
+
+.secondary-action:hover {
+  border-color: #9d8c6d;
+  background: rgba(250, 239, 213, 0.96);
+}
+
+.secondary-action:active {
+  background: #eadbbd;
 }
 
 button:focus {
@@ -295,79 +331,6 @@ button:focus {
   overflow-wrap: anywhere;
 }
 
-.empty-state {
-  padding: 10px 14px 10px 44px;
-  color: #725f4b;
-}
-
-.empty-state p {
-  margin: 0;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #2d2a24;
-    background: #d8ccb2;
-  }
-
-  body {
-    background:
-      radial-gradient(
-        circle at top left,
-        rgba(255, 255, 255, 0.42),
-        transparent 32%
-      ),
-      linear-gradient(135deg, #d8ccb2, #d1c4a8);
-  }
-
-  .composer,
-  .review-panel,
-  .empty-state {
-    border-color: #b9aa8d;
-    background:
-      linear-gradient(90deg, rgba(190, 83, 65, 0.2) 32px, transparent 33px),
-      repeating-linear-gradient(
-        to bottom,
-        rgba(255, 249, 231, 0.92) 0,
-        rgba(255, 249, 231, 0.92) 23px,
-        rgba(91, 124, 148, 0.15) 24px
-      ),
-      #f3e7cc;
-    box-shadow:
-      0 14px 30px rgba(34, 25, 13, 0.24),
-      inset 0 1px rgba(255, 255, 255, 0.58);
-  }
-
-  h1,
-  h2 {
-    color: #4b3524;
-  }
-
-  .eyebrow,
-  .field-label,
-  .character-count,
-  .empty-state {
-    color: #725f4b;
-  }
-
-  .text-input,
-  select {
-    border-color: #b7a98c;
-    color: #2d2a24;
-    background-color: rgba(255, 250, 235, 0.88);
-  }
-
-  .original-text {
-    color: #514534;
-  }
-
-  button,
-  button:hover,
-  button:active {
-    color: #fff8e7;
-  }
-}
-
 @media (max-width: 680px) {
   .app-shell {
     padding: 10px;
@@ -383,6 +346,14 @@ button:focus {
 
   .character-count {
     justify-self: start;
+  }
+
+  .action-buttons {
+    justify-content: stretch;
+  }
+
+  .action-buttons button {
+    flex: 1;
   }
 }
 </style>
