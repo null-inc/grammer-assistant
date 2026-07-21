@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
 import { rewriteTextSetting } from "./types/rewriter.types";
+import useCopy from "./core/copy";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
@@ -31,7 +32,10 @@ function onSubmit() {
   editedText.value = reviewState.value.rewrittenText;
 }
 
-function handleCopy() {}
+function handleCopy() {
+  const { copy } = useCopy(activeText.value);
+  console.log(copy.value);
+}
 </script>
 
 <template>
