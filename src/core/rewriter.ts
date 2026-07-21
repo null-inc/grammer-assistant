@@ -39,7 +39,7 @@ export function rewriteText(
 }
 
 function removeFillerWords(text: string): string {
-  const fillerWords = ["very", "really"];
+  const fillerWords = ["very", "really", "more"];
   const words = text.split(" ");
 
   const filteredWords = words.filter((word) => {

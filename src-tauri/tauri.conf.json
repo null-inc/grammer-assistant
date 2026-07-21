@@ -13,8 +13,9 @@
     "windows": [
       {
         "title": "grammer-assistant",
-        "width": 800,
-        "height": 600
+        "width": 460,
+        "height": 420,
+        "resizable": false
       }
     ],
     "security": {

@@ -1,59 +1,100 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
+import { computed, ref } from "vue";
+// import { invoke } from "@tauri-apps/api/core";
+import { createReviewState } from "./core/review-state";
+import { ReviewState } from "./types/review-state.types";
+import { rewriteTextSetting } from "./types/rewriter.types";
 
-const greetMsg = ref("");
-const name = ref("");
+const reviewState = ref<ReviewState | null>(null);
+const rewriteSetting = ref<rewriteTextSetting>("more-professional");
+const editedText = ref("");
+const userInput = ref("");
 
-async function greet() {
+const activeText = computed({
+  get() {
+    return reviewState.value ? editedText.value : userInput.value;
+  },
+  set(value: string) {
+    if (reviewState.value) {
+      editedText.value = value;
+      return;
+    }
+
+    userInput.value = value;
+  },
+});
+
+function onSubmit() {
   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  greetMsg.value = await invoke("greet", { name: name.value });
+  // greetMsg.value = await invoke("greet", { name: name.value });
+  reviewState.value = createReviewState(userInput.value, rewriteSetting.value);
+  editedText.value = reviewState.value.rewrittenText;
 }
+
+function handleCopy() {}
 </script>
 
 <template>
-  <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
+  <main class="app-shell">
+    <section class="composer">
+      <div class="app-heading">
+        <p class="eyebrow">Grammar Assistant</p>
+        <h1>AI Rewrite</h1>
+      </div>
 
-    <div class="row">
-      <a href="https://vite.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
+      <form class="rewrite-form" @submit.prevent="onSubmit">
+        <label class="field-label" for="review-text">
+          {{ reviewState ? "Rewrite" : "Selected text" }}
+        </label>
+        <textarea
+          id="review-text"
+          v-model="activeText"
+          class="text-input"
+          maxlength="500"
+          rows="4"
+        ></textarea>
 
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
+        <div class="form-footer">
+          <label class="setting-field" for="rewrite-setting">
+            <span class="field-label">Mode</span>
+            <select id="rewrite-setting" v-model="rewriteSetting">
+              <option value="more-professional">More Professional</option>
+              <option value="more-concise">More Concise</option>
+            </select>
+          </label>
+
+          <p class="character-count">{{ activeText.length }} / 500</p>
+
+          <div class="action-buttons">
+            <button class="primary-action" type="submit">Rewrite</button>
+            <button
+              class="secondary-action"
+              type="button"
+              @click.prevent="handleCopy"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section v-if="reviewState" class="review-panel">
+      <h2>Original reference</h2>
+      <p class="original-text">{{ reviewState.originalText }}</p>
+    </section>
   </main>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-</style>
 <style>
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #2d2a24;
+  background: #efe4c9;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -62,97 +103,257 @@ async function greet() {
   -webkit-text-size-adjust: 100%;
 }
 
-.container {
+* {
+  box-sizing: border-box;
+}
+
+body {
   margin: 0;
-  padding-top: 10vh;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.58),
+      transparent 32%
+    ),
+    linear-gradient(135deg, #efe4c9, #e7dcc2);
+}
+
+button,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(420px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
+  gap: 10px;
+  justify-content: flex-start;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
+.composer,
+.review-panel {
+  border: 1px solid #c9bea7;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(190, 83, 65, 0.18) 32px, transparent 33px),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 250, 235, 0.9) 0,
+      rgba(255, 250, 235, 0.9) 23px,
+      rgba(99, 129, 153, 0.13) 24px
+    ),
+    #f6ecd4;
+  box-shadow:
+    0 12px 26px rgba(74, 56, 32, 0.16),
+    inset 0 1px rgba(255, 255, 255, 0.7);
 }
 
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
+.composer {
+  padding: 14px 14px 14px 44px;
 }
 
-.row {
+.app-heading {
   display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
 }
 
 h1 {
-  text-align: center;
+  margin: 0;
+  color: #4b3524;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  letter-spacing: 0;
 }
 
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+h2 {
+  margin: 0 0 6px;
+  color: #6a4c35;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 
+.eyebrow,
+.field-label,
+.character-count {
+  margin: 0;
+  color: #725f4b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.eyebrow,
+.field-label {
+  font-weight: 700;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+}
+
+.rewrite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.text-input,
+select,
 button {
+  border-radius: 6px;
+  border: 1px solid #bcae91;
+  color: #2d2a24;
+  background-color: rgba(255, 249, 231, 0.86);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
+}
+
+.text-input {
+  width: 100%;
+  min-height: 104px;
+  padding: 10px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.text-input:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(49, 95, 138, 0.16);
+}
+
+.form-footer {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.setting-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+select {
+  appearance: none;
+  min-height: 34px;
+  padding: 0 30px 0 10px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #5b4a35 50%),
+    linear-gradient(135deg, #5b4a35 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 14px,
+    calc(100% - 11px) 14px;
+  background-repeat: no-repeat;
+  background-size:
+    5px 5px,
+    5px 5px;
   cursor: pointer;
 }
 
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+.character-count {
+  align-self: center;
+  white-space: nowrap;
 }
 
-input,
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
 button {
+  min-width: 76px;
+  min-height: 34px;
+  padding: 0 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-action {
+  border-color: #8d7350;
+  color: #fff8e7;
+  background: linear-gradient(180deg, #9a805c, #806642);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.18),
+    0 2px 6px rgba(93, 69, 38, 0.18);
+}
+
+.primary-action:hover {
+  border-color: #765f40;
+  background: linear-gradient(180deg, #8c704c, #725836);
+}
+
+.primary-action:active {
+  background: #604c33;
+}
+
+.secondary-action {
+  border-color: #bcae91;
+  color: #5b4a35;
+  background: rgba(255, 249, 231, 0.86);
+}
+
+.secondary-action:hover {
+  border-color: #9d8c6d;
+  background: rgba(250, 239, 213, 0.96);
+}
+
+.secondary-action:active {
+  background: #eadbbd;
+}
+
+button:focus {
   outline: none;
+  box-shadow: 0 0 0 3px rgba(49, 95, 138, 0.2);
 }
 
-#greet-input {
-  margin-right: 5px;
+.review-panel {
+  padding: 12px 14px 12px 44px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
+.original-text {
+  margin: 0;
+  color: #514534;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 680px) {
+  .app-shell {
+    padding: 10px;
   }
 
-  a:hover {
-    color: #24c8db;
+  .composer {
+    padding: 14px;
   }
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
+  .form-footer {
+    grid-template-columns: 1fr;
   }
-  button:active {
-    background-color: #0f0f0f69;
+
+  .character-count {
+    justify-self: start;
+  }
+
+  .action-buttons {
+    justify-content: stretch;
+  }
+
+  .action-buttons button {
+    flex: 1;
   }
 }
 </style>
