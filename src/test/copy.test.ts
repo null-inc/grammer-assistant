@@ -1,15 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import useCopy from "../core/copy";
 
 describe("Copy", () => {
-  it("returns a string", () => {
-    const { copy } = useCopy();
-    expect(copy.value).toBeTypeOf("string");
+  let clipboardText = "";
+  const writeText = vi.fn().mockImplementation(async (text: string) => {
+    clipboardText = text;
+  });
+  const readText = vi.fn().mockImplementation(async () => clipboardText);
+
+  it("returns a string", async () => {
+    const { readCopy, copyText } = useCopy({ writeText, readText });
+
+    await copyText("");
+
+    expect(await readCopy()).toBeTypeOf("string");
   });
 
-  it("stores given text in the useCopy state", () => {
+  it("stores given text in the useCopy state", async () => {
     const text = "Meshuggah";
-    const { copy } = useCopy(text);
-    expect(copy.value).toBe(text);
+    const { readCopy, copyText } = useCopy({ writeText, readText });
+    await copyText(text);
+    expect(await readCopy()).toBe(text);
   });
 });

@@ -8,6 +8,8 @@ import useCopy from "./core/copy";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
+const { copyText } = useCopy(navigator.clipboard);
+
 const editedText = ref("");
 const userInput = ref("");
 
@@ -32,9 +34,12 @@ function onSubmit() {
   editedText.value = reviewState.value.rewrittenText;
 }
 
-function handleCopy() {
-  const { copy } = useCopy(activeText.value);
-  console.log(copy.value);
+async function handleCopy() {
+  try {
+    await copyText(activeText.value);
+  } catch {
+    console.error("Could not copy text");
+  }
 }
 </script>
 
