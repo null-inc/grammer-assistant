@@ -8,7 +8,7 @@ import useCopy from "./core/copy";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
-const { copyText } = useCopy(navigator.clipboard);
+const { copyText, copyStatus } = useCopy(navigator.clipboard);
 
 const editedText = ref("");
 const userInput = ref("");
@@ -73,6 +73,10 @@ async function handleCopy() {
           </label>
 
           <p class="character-count">{{ activeText.length }} / 500</p>
+          <p class="copy-status">
+            <span v-if="copyStatus === 'success'">Copied</span>
+            <span v-if="copyStatus === 'error'">Could not copy</span>
+          </p>
 
           <div class="action-buttons">
             <button class="primary-action" type="submit">Rewrite</button>
@@ -277,6 +281,18 @@ select {
   white-space: nowrap;
 }
 
+.copy-status {
+  min-width: 76px;
+  margin: 0;
+  align-self: center;
+  color: #725f4b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -355,6 +371,11 @@ button:focus {
 
   .character-count {
     justify-self: start;
+  }
+
+  .copy-status {
+    justify-self: start;
+    text-align: left;
   }
 
   .action-buttons {
