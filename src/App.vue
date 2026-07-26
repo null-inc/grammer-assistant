@@ -4,11 +4,13 @@ import { computed, ref } from "vue";
 import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
 import { rewriteTextSetting } from "./types/rewriter.types";
+import { createClipboard } from "./services/clipboard";
 import useCopy from "./core/copy";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
-const { copyText, copyStatus } = useCopy(navigator.clipboard);
+const clipboard = createClipboard();
+const { copyClipboardText, readClipboardText, copyStatus } = useCopy(clipboard);
 
 const editedText = ref("");
 const userInput = ref("");
@@ -36,9 +38,25 @@ function onSubmit() {
 
 async function handleCopy() {
   try {
-    await copyText(activeText.value);
+    await copyClipboardText(activeText.value);
   } catch {
     console.error("Could not copy text");
+  }
+}
+
+async function handleLoadText() {
+  try {
+    const clipboardText = await readClipboardText();
+
+    if (clipboardText === "") {
+      throw new Error("clipboard empty");
+    }
+
+    userInput.value = clipboardText;
+    editedText.value = "";
+    reviewState.value = null;
+  } catch {
+    console.error("Could not read text");
   }
 }
 </script>
@@ -71,6 +89,13 @@ async function handleCopy() {
               <option value="more-concise">More Concise</option>
             </select>
           </label>
+          <button
+            class="secondary-action"
+            type="button"
+            @click="handleLoadText"
+          >
+            Load
+          </button>
 
           <p class="character-count">{{ activeText.length }} / 500</p>
           <p class="copy-status">

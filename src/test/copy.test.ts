@@ -14,11 +14,11 @@ describe("Copy", () => {
       }),
     };
 
-    const { readCopy, copyText } = useCopy(clipboard);
+    const { readClipboardText, copyClipboardText } = useCopy(clipboard);
 
-    await copyText("");
+    await copyClipboardText("");
 
-    expect(await readCopy()).toBeTypeOf("string");
+    expect(await readClipboardText()).toBeTypeOf("string");
   });
 
   it("reads back copied text from the clipboard adapter", async () => {
@@ -33,9 +33,9 @@ describe("Copy", () => {
       }),
     };
     const text = "Meshuggah";
-    const { readCopy, copyText } = useCopy(clipboard);
-    await copyText(text);
-    expect(await readCopy()).toBe(text);
+    const { readClipboardText, copyClipboardText } = useCopy(clipboard);
+    await copyClipboardText(text);
+    expect(await readClipboardText()).toBe(text);
   });
 
   it("sets copy status to success when text is copied", async () => {
@@ -48,9 +48,9 @@ describe("Copy", () => {
       readText: vi.fn().mockImplementation(async () => clipboardText),
     };
 
-    const { copyText, copyStatus } = useCopy(clipboard);
+    const { copyClipboardText, copyStatus } = useCopy(clipboard);
 
-    await copyText("hello");
+    await copyClipboardText("hello");
 
     expect(copyStatus.value).toBe("success");
   });
@@ -61,9 +61,20 @@ describe("Copy", () => {
       readText: vi.fn().mockResolvedValue(""),
     };
 
-    const { copyText, copyStatus } = useCopy(clipboard);
+    const { copyClipboardText, copyStatus } = useCopy(clipboard);
 
-    await expect(copyText("")).rejects.toThrow();
+    await expect(copyClipboardText("")).rejects.toThrow();
     expect(copyStatus.value).toBe("error");
+  });
+
+  it("returns an empty string when reading from clipboard fails", async () => {
+    const clipboard = {
+      writeText: vi.fn().mockResolvedValue(undefined),
+      readText: vi.fn().mockRejectedValue(new Error("No permission")),
+    };
+
+    const { readClipboardText } = useCopy(clipboard);
+
+    await expect(readClipboardText()).resolves.toBe("");
   });
 });

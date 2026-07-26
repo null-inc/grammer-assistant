@@ -4,7 +4,7 @@ import { ref } from "vue";
 export default function useCopy(clipboard: Clipboard) {
   const copyStatus = ref<CopyStatus>("idle");
 
-  async function copyText(text: string) {
+  async function copyClipboardText(text: string) {
     copyStatus.value = "copying";
 
     try {
@@ -16,7 +16,7 @@ export default function useCopy(clipboard: Clipboard) {
     }
   }
 
-  async function readCopy(): Promise<string> {
+  async function readClipboardText(): Promise<string> {
     try {
       return await clipboard.readText();
     } catch {
@@ -26,8 +26,8 @@ export default function useCopy(clipboard: Clipboard) {
   }
 
   return {
-    copyText,
-    readCopy,
+    copyClipboardText,
+    readClipboardText,
     copyStatus,
   };
 }
