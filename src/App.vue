@@ -4,9 +4,14 @@ import { computed, ref } from "vue";
 import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
 import { rewriteTextSetting } from "./types/rewriter.types";
+import { createClipboard } from "./services/clipboard";
+import useCopy from "./core/copy";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
+const clipboard = createClipboard();
+const { copyClipboardText, readClipboardText, copyStatus } = useCopy(clipboard);
+
 const editedText = ref("");
 const userInput = ref("");
 
@@ -31,7 +36,29 @@ function onSubmit() {
   editedText.value = reviewState.value.rewrittenText;
 }
 
-function handleCopy() {}
+async function handleCopy() {
+  try {
+    await copyClipboardText(activeText.value);
+  } catch {
+    console.error("Could not copy text");
+  }
+}
+
+async function handleLoadText() {
+  try {
+    const clipboardText = await readClipboardText();
+
+    if (clipboardText === "") {
+      throw new Error("clipboard empty");
+    }
+
+    userInput.value = clipboardText;
+    editedText.value = "";
+    reviewState.value = null;
+  } catch {
+    console.error("Could not read text");
+  }
+}
 </script>
 
 <template>
@@ -55,15 +82,30 @@ function handleCopy() {}
         ></textarea>
 
         <div class="form-footer">
-          <label class="setting-field" for="rewrite-setting">
-            <span class="field-label">Mode</span>
-            <select id="rewrite-setting" v-model="rewriteSetting">
-              <option value="more-professional">More Professional</option>
-              <option value="more-concise">More Concise</option>
-            </select>
-          </label>
+          <div class="mode-row">
+            <label class="setting-field" for="rewrite-setting">
+              <span class="field-label">Mode</span>
+              <select id="rewrite-setting" v-model="rewriteSetting">
+                <option value="more-professional">More Professional</option>
+                <option value="more-concise">More Concise</option>
+              </select>
+            </label>
+            <button
+              class="secondary-action load-action"
+              type="button"
+              @click="handleLoadText"
+            >
+              Load
+            </button>
+          </div>
 
-          <p class="character-count">{{ activeText.length }} / 500</p>
+          <div class="feedback-row">
+            <p class="character-count">{{ activeText.length }} / 500</p>
+            <p class="copy-status">
+              <span v-if="copyStatus === 'success'">Copied</span>
+              <span v-if="copyStatus === 'error'">Could not copy</span>
+            </p>
+          </div>
 
           <div class="action-buttons">
             <button class="primary-action" type="submit">Rewrite</button>
@@ -234,8 +276,15 @@ select:focus {
 }
 
 .form-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mode-row,
+.feedback-row {
   display: grid;
-  grid-template-columns: minmax(140px, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: end;
 }
@@ -264,7 +313,20 @@ select {
 }
 
 .character-count {
+  margin: 0;
   align-self: center;
+  white-space: nowrap;
+}
+
+.copy-status {
+  min-width: 76px;
+  margin: 0;
+  align-self: center;
+  color: #725f4b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: right;
   white-space: nowrap;
 }
 
@@ -280,6 +342,11 @@ button {
   padding: 0 12px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.load-action {
+  min-width: 68px;
+  padding-inline: 10px;
 }
 
 .primary-action {
@@ -340,12 +407,18 @@ button:focus {
     padding: 14px;
   }
 
-  .form-footer {
+  .mode-row,
+  .feedback-row {
     grid-template-columns: 1fr;
   }
 
   .character-count {
     justify-self: start;
+  }
+
+  .copy-status {
+    justify-self: start;
+    text-align: left;
   }
 
   .action-buttons {
