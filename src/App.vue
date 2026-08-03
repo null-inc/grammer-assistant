@@ -6,6 +6,7 @@ import { rewriteTextSetting } from "./types/rewriter.types";
 import { createClipboard } from "./services/clipboard";
 import { registerGlobalShortcut } from "./services/global-shortcut";
 import useCopy from "./core/copy";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
@@ -60,8 +61,33 @@ async function handleLoadText() {
   }
 }
 
+async function showAndFocusWindow() {
+  const appWindow = getCurrentWebviewWindow();
+
+  if (await appWindow.isMinimized()) {
+    await appWindow.unminimize();
+  }
+
+  await appWindow.show();
+  await appWindow.setFocus();
+}
+
+async function handleShortcut() {
+  try {
+    console.log("Shortcut triggered");
+
+    await handleLoadText();
+    console.log("Clipboard loaded");
+
+    await showAndFocusWindow();
+    console.log("Window focus requested");
+  } catch (error) {
+    console.error("Shortcut action failed", error);
+  }
+}
+
 onMounted(() => {
-  void registerGlobalShortcut(handleLoadText);
+  void registerGlobalShortcut(handleShortcut);
 });
 </script>
 
