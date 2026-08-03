@@ -5,9 +5,11 @@ import {
 } from "@tauri-apps/plugin-global-shortcut";
 import { isTauri } from "@tauri-apps/api/core";
 
-const shortcut = "CommandOrControl+Alt+Shift+G";
+const shortcut = "CommandOrControl+Alt+G";
 
-export async function registerGlobalShortcut() {
+export async function registerGlobalShortcut(
+  onTriggered: () => void | Promise<void>,
+) {
   if (!isTauri()) {
     console.log("skipping global shortcut outside tauri");
     return;
@@ -20,7 +22,7 @@ export async function registerGlobalShortcut() {
 
     await register(shortcut, (event) => {
       if (event.state === "Pressed") {
-        console.log("Shortcut triggered");
+        void onTriggered();
       }
     });
     console.log("Global shortcut registered");

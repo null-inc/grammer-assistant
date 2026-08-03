@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-// import { invoke } from "@tauri-apps/api/core";
+import { computed, onMounted, ref } from "vue";
 import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
 import { rewriteTextSetting } from "./types/rewriter.types";
 import { createClipboard } from "./services/clipboard";
+import { registerGlobalShortcut } from "./services/global-shortcut";
 import useCopy from "./core/copy";
 
 const reviewState = ref<ReviewState | null>(null);
@@ -59,6 +59,10 @@ async function handleLoadText() {
     console.error("Could not read text");
   }
 }
+
+onMounted(() => {
+  void registerGlobalShortcut(handleLoadText);
+});
 </script>
 
 <template>
