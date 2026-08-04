@@ -1,33 +1,17 @@
-import {
-  register,
-  isRegistered,
-  unregister,
-} from "@tauri-apps/plugin-global-shortcut";
 import { isTauri } from "@tauri-apps/api/core";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
-const shortcut = "CommandOrControl+Alt+Shift+G";
+const shortcutEvent = "global-shortcut-triggered";
 
-export async function registerGlobalShortcut(
+export async function listenForGlobalShortcut(
   onTriggered: () => void | Promise<void>,
-) {
+): Promise<UnlistenFn> {
   if (!isTauri()) {
     console.log("skipping global shortcut outside tauri");
-    return;
+    return () => {};
   }
 
-  try {
-    if (await isRegistered(shortcut)) {
-      await unregister(shortcut);
-    }
-
-    await register(shortcut, (event) => {
-      if (event.state === "Pressed") {
-        console.log("triggered");
-        void onTriggered();
-      }
-    });
-    console.log("Global shortcut registered");
-  } catch (error) {
-    console.error("Could not register global shortcut", error);
-  }
+  return listen(shortcutEvent, () => {
+    void onTriggered();
+  });
 }

@@ -5,14 +5,8 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "core:window:allow-show",
-    "core:window:allow-unminimize",
-    "core:window:allow-set-focus",
     "opener:default",
     "clipboard-manager:allow-read-text",
-    "clipboard-manager:allow-write-text",
-    "global-shortcut:allow-is-registered",
-    "global-shortcut:allow-register",
-    "global-shortcut:allow-unregister"
+    "clipboard-manager:allow-write-text"
   ]
 }
