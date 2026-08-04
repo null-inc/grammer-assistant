@@ -16,7 +16,7 @@ pub async fn listen_for_shortcut(
     println!("Portal version: {}", portal.version());
 
     // Portal shortcuts are session-scoped, so this session must remain alive
-    // for as long as we want to recieve activations.
+    // for as long as we want to receive activations.
     let session = portal
         .create_session(CreateSessionOptions::default())
         .await?;
@@ -64,7 +64,7 @@ pub async fn listen_for_shortcut(
         if let Some(window) = app.get_webview_window("main") {
             let window_for_main_thread = window.clone();
 
-            // GTK window operations must run on GTK's main thread. 
+            // GTK window operations must run on GTK's main thread.
             app.run_on_main_thread(move || {
                 let Ok(gtk_window) = window_for_main_thread.gtk_window() else {
                     eprintln!("Could not access the GTK window");
