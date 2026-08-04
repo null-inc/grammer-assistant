@@ -15,6 +15,7 @@ pub fn run() {
             let app_handle = _app.handle().clone();
 
             #[cfg(target_os = "linux")]
+            // Keep the portal listener running without blocking Tauri's main event loop.
             tauri::async_runtime::spawn(async {
                 if let Err(error) = portal_shortcut::listen_for_shortcut(app_handle).await {
                     eprintln!("Global shortcut portal failed: {error}");
