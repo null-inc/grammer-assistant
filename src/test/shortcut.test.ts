@@ -1,73 +1,50 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { registerGlobalShortcut } from "../services/global-shortcut";
+import { listenForGlobalShortcut } from "../services/global-shortcut";
 
 const tauriMocks = vi.hoisted(() => ({
-  handler: undefined as
-    | ((event: {
-        state: "Pressed" | "Released";
-        shortcut: string;
-        id: number;
-      }) => void)
-    | undefined,
-  register: vi.fn(),
-  isRegistered: vi.fn(),
-  unregister: vi.fn(),
+  handler: undefined as (() => void) | undefined,
+  listen: vi.fn(),
+  unlisten: vi.fn(),
 }));
 
 vi.mock("@tauri-apps/api/core", () => ({
   isTauri: () => true,
 }));
 
-vi.mock("@tauri-apps/plugin-global-shortcut", () => ({
-  register: tauriMocks.register,
-  isRegistered: tauriMocks.isRegistered,
-  unregister: tauriMocks.unregister,
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: tauriMocks.listen,
 }));
 
-describe("registerGlobalShortcut", () => {
+describe("listenForGlobalShortcut", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     tauriMocks.handler = undefined;
-    tauriMocks.isRegistered.mockResolvedValue(false);
 
-    tauriMocks.register.mockImplementation(async (_shortcut, handler) => {
+    tauriMocks.listen.mockImplementation(async (_event, handler) => {
       tauriMocks.handler = handler;
+      return tauriMocks.unlisten;
     });
   });
 
-  it("runs the callback when the shortcut is pressed", async () => {
+  it("runs the callback when the portal shortcut event is received", async () => {
     const onTriggered = vi.fn();
 
-    await registerGlobalShortcut(onTriggered);
+    await listenForGlobalShortcut(onTriggered);
 
-    tauriMocks.handler?.({
-      state: "Pressed",
-      shortcut: "CommandOrControl+Alt+G",
-      id: 1,
-    });
+    tauriMocks.handler?.();
 
     expect(onTriggered).toHaveBeenCalledOnce();
-    expect(tauriMocks.register).toHaveBeenCalledWith(
-      "CommandOrControl+Alt+G",
+    expect(tauriMocks.listen).toHaveBeenCalledWith(
+      "global-shortcut-triggered",
       expect.any(Function),
     );
   });
 
-  it("does not run the callback when the shortcut is released", async () => {
-    const onTriggered = vi.fn();
+  it("returns the event listener cleanup function", async () => {
+    const unlisten = await listenForGlobalShortcut(vi.fn());
 
-    await registerGlobalShortcut(onTriggered);
+    unlisten();
 
-    tauriMocks.handler?.({
-      state: "Released",
-      shortcut: "CommandOrControl+Alt+G",
-      id: 1,
-    });
-
-    expect(onTriggered).not.toHaveBeenCalled();
-    expect(tauriMocks.register).toHaveBeenCalledWith(
-      "CommandOrControl+Alt+G",
-      expect.any(Function),
-    );
+    expect(tauriMocks.unlisten).toHaveBeenCalledOnce();
   });
 });

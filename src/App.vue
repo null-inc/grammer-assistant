@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
 import { rewriteTextSetting } from "./types/rewriter.types";
 import { createClipboard } from "./services/clipboard";
-import { registerGlobalShortcut } from "./services/global-shortcut";
+import { listenForGlobalShortcut } from "./services/global-shortcut";
 import useCopy from "./core/copy";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
@@ -61,33 +60,19 @@ async function handleLoadText() {
   }
 }
 
-async function showAndFocusWindow() {
-  const appWindow = getCurrentWebviewWindow();
-
-  if (await appWindow.isMinimized()) {
-    await appWindow.unminimize();
-  }
-
-  await appWindow.show();
-  await appWindow.setFocus();
-}
-
 async function handleShortcut() {
-  try {
-    console.log("Shortcut triggered");
-
-    await handleLoadText();
-    console.log("Clipboard loaded");
-
-    await showAndFocusWindow();
-    console.log("Window focus requested");
-  } catch (error) {
-    console.error("Shortcut action failed", error);
-  }
+  console.log("Shortcut triggered");
+  await handleLoadText();
 }
 
-onMounted(() => {
-  void registerGlobalShortcut(handleShortcut);
+let unlistenShortcut: (() => void) | undefined;
+
+onMounted(async () => {
+  unlistenShortcut = await listenForGlobalShortcut(handleShortcut);
+});
+
+onUnmounted(() => {
+  unlistenShortcut?.();
 });
 </script>
 
