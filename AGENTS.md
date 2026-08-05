@@ -56,11 +56,8 @@ If no handoff exists, mention that briefly only when it matters.
 
 - Keep the MVP Linux-first.
 - Use Tauri and Vue 3.
-- Keep the app stateless in the MVP.
 - Do not save rewritten text.
-- Do not make network calls in the MVP.
 - Do not hardcode or commit API keys.
-- OpenAI API support is a future feature and must use user-provided credentials.
 
 ## Communication
 
