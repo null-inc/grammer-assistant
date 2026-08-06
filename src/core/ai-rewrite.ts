@@ -1,7 +1,9 @@
 import { ref } from "vue";
-import type { AIRewriter, RewriteRequest } from "../types/ai-rewriter.types";
-
-type RewriteStatus = "idle" | "loading" | "success" | "error";
+import type {
+  AIRewriter,
+  RewriteRequest,
+  RewriteStatus,
+} from "../types/ai-rewriter.types";
 
 export default function useAIRewrite(rewriter: AIRewriter) {
   const status = ref<RewriteStatus>("idle");
