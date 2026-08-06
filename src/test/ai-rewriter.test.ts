@@ -40,4 +40,37 @@ describe("AIRewriter", () => {
     expect(rewrittenText.value).toBe("");
     expect(status.value).toBe("error");
   });
+
+  it("ignores another rewrite while one is already loading", async () => {
+    // use deffered Promise pattern to test the desired loading behaviour
+    let resolveRewrite!: (text: string) => void;
+
+    const pendingRewrite = new Promise<string>((resolve) => {
+      resolveRewrite = resolve;
+    });
+
+    const aiRewriter: AIRewriter = {
+      rewrite: vi.fn().mockReturnValue(pendingRewrite),
+    };
+
+    const { rewrite, status } = useAIRewrite(aiRewriter);
+
+    const request: RewriteRequest = {
+      text: "hey i need some help",
+      setting: "more-professional",
+    };
+
+    const firstRewrite = rewrite(request);
+
+    expect(status.value).toBe("loading");
+
+    const secondRewrite = rewrite(request);
+
+    expect(aiRewriter.rewrite).toHaveBeenCalledOnce();
+
+    resolveRewrite("Hello, I need some help.");
+
+    await Promise.all([firstRewrite, secondRewrite]);
+    expect(status.value).toBe("success");
+  });
 });
