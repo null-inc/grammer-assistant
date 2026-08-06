@@ -27,7 +27,8 @@ describe("AIRewriter", () => {
       rewrite: vi.fn().mockRejectedValue(new Error()),
     };
 
-    const { rewrite, rewrittenText, status } = useAIRewrite(aiRewriter);
+    const { rewrite, rewrittenText, status, errorMessage } =
+      useAIRewrite(aiRewriter);
 
     const request: RewriteRequest = {
       text: "HELP, i need somebody, not just anybody, HELP",
@@ -39,6 +40,9 @@ describe("AIRewriter", () => {
     expect(aiRewriter.rewrite).toHaveBeenCalledWith(request);
     expect(rewrittenText.value).toBe("");
     expect(status.value).toBe("error");
+    expect(errorMessage.value).toBe(
+      "Could not rewrite text. Please try again.",
+    );
   });
 
   it("ignores another rewrite while one is already loading", async () => {

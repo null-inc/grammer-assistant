@@ -6,16 +6,19 @@ type RewriteStatus = "idle" | "loading" | "success" | "error";
 export default function useAIRewrite(rewriter: AIRewriter) {
   const status = ref<RewriteStatus>("idle");
   const rewrittenText = ref("");
+  const errorMessage = ref("");
 
   async function rewrite(request: RewriteRequest) {
     if (status.value === "loading") return;
 
     status.value = "loading";
+
     try {
       rewrittenText.value = await rewriter.rewrite(request);
       status.value = "success";
     } catch {
       status.value = "error";
+      errorMessage.value = "Could not rewrite text. Please try again.";
     }
   }
 
@@ -23,5 +26,6 @@ export default function useAIRewrite(rewriter: AIRewriter) {
     rewrite,
     rewrittenText,
     status,
+    errorMessage,
   };
 }
