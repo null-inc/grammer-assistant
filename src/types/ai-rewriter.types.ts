@@ -5,6 +5,8 @@ export type RewriteRequest = {
   setting: rewriteTextSetting;
 };
 
+export type RewriteStatus = "idle" | "loading" | "success" | "error";
+
 export interface AIRewriter {
   rewrite(request: RewriteRequest): Promise<string>;
 }
