@@ -1,0 +1,25 @@
+import { ref } from "vue";
+import type { AIRewriter, RewriteRequest } from "../types/ai-rewriter.types";
+
+type RewriteStatus = "idle" | "loading" | "success" | "error";
+
+export default function useAIRewrite(rewriter: AIRewriter) {
+  const status = ref<RewriteStatus>("idle");
+  const rewrittenText = ref("");
+
+  async function rewrite(request: RewriteRequest) {
+    status.value = "loading";
+    try {
+      rewrittenText.value = await rewriter.rewrite(request);
+      status.value = "success";
+    } catch {
+      status.value = "error";
+    }
+  }
+
+  return {
+    rewrite,
+    rewrittenText,
+    status,
+  };
+}
