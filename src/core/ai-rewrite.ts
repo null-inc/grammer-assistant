@@ -8,6 +8,8 @@ export default function useAIRewrite(rewriter: AIRewriter) {
   const rewrittenText = ref("");
 
   async function rewrite(request: RewriteRequest) {
+    if (status.value === "loading") return;
+
     status.value = "loading";
     try {
       rewrittenText.value = await rewriter.rewrite(request);
