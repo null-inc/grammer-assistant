@@ -5,7 +5,7 @@ import type {
 } from "../types/ai-config.types";
 
 export default function useAIConfiguration(config: AIConfiguration) {
-  const configurationStatus = ref<ConfigurationStatus>("missing");
+  const configurationStatus = ref<ConfigurationStatus>("checking");
 
   async function checkConfiguration() {
     configurationStatus.value = "checking";

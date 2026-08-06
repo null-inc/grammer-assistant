@@ -11,10 +11,26 @@ describe("useAiConfiguration", () => {
     const { checkConfiguration, configurationStatus } =
       useAIConfiguration(aiConfiguration);
 
+    expect(configurationStatus.value).toBe("checking");
+
     await checkConfiguration();
 
     expect(aiConfiguration.isConfigured).toHaveBeenCalledOnce();
 
     expect(configurationStatus.value).toBe("missing");
+  });
+
+  it("sets the status to configured when AI is configured", async () => {
+    const aiConfiguration: AIConfiguration = {
+      isConfigured: vi.fn().mockResolvedValue(true),
+    };
+
+    const { checkConfiguration, configurationStatus } =
+      useAIConfiguration(aiConfiguration);
+
+    await checkConfiguration();
+
+    expect(aiConfiguration.isConfigured).toHaveBeenCalledOnce();
+    expect(configurationStatus.value).toBe("configured");
   });
 });
