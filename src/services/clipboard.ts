@@ -9,7 +9,6 @@ function createBrowserClipboard(): Clipboard {
   };
 }
 
-// TODO
 function createTauriClipboard(): Clipboard {
   return {
     writeText: (text) => writeText(text),
