@@ -73,4 +73,24 @@ describe("AIRewriter", () => {
     await Promise.all([firstRewrite, secondRewrite]);
     expect(status.value).toBe("success");
   });
+
+  // Ensuring the correct language should be handled by the LLM request on the backend side, this just verifies that the frontend don't modify the response
+  it("stores a successful Swedish rewrite without modifying it", async () => {
+    const aiRewriter: AIRewriter = {
+      rewrite: vi.fn().mockResolvedValue("Hej, jag behöver hjälp med det här."),
+    };
+
+    const { rewrite, rewrittenText, status } = useAIRewrite(aiRewriter);
+
+    const request: RewriteRequest = {
+      text: "hej jag behöver hjälp med det här",
+      setting: "more-professional",
+    };
+
+    await rewrite(request);
+
+    expect(aiRewriter.rewrite).toHaveBeenCalledWith(request);
+    expect(rewrittenText.value).toBe("Hej, jag behöver hjälp med det här.");
+    expect(status.value).toBe("success");
+  });
 });
