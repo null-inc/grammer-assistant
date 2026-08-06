@@ -97,4 +97,38 @@ describe("AIRewriter", () => {
     expect(rewrittenText.value).toBe("Hej, jag behöver hjälp med det här.");
     expect(status.value).toBe("success");
   });
+
+  it("clear the error message after a successful retry", async () => {
+    const aiRewriter: AIRewriter = {
+      rewrite: vi
+        .fn()
+        .mockRejectedValueOnce(new Error())
+        .mockResolvedValueOnce("Hello, I need some help."),
+    };
+
+    const { rewrite, status, rewrittenText, errorMessage } =
+      useAIRewrite(aiRewriter);
+
+    const request: RewriteRequest = {
+      text: "hey i need some help",
+      setting: "more-professional",
+    };
+
+    // rewrite 1 = mockRejectedValueOnce(new Error())
+    await rewrite(request);
+
+    expect(status.value).toBe("error");
+    expect(rewrittenText.value).toBe("");
+    expect(errorMessage.value).toBe(
+      "Could not rewrite text. Please try again.",
+    );
+
+    // rewrite 2 = mockResolvedValueOnce("Hello, I need some help.")
+    await rewrite(request);
+
+    expect(aiRewriter.rewrite).toHaveBeenCalledTimes(2);
+    expect(rewrittenText.value).toBe("Hello, I need some help.");
+    expect(status.value).toBe("success");
+    expect(errorMessage.value).toBe("");
+  });
 });

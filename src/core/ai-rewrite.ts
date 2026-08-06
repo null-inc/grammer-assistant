@@ -11,6 +11,8 @@ export default function useAIRewrite(rewriter: AIRewriter) {
   async function rewrite(request: RewriteRequest) {
     if (status.value === "loading") return;
 
+    if (errorMessage.value !== "") errorMessage.value = "";
+
     status.value = "loading";
 
     try {
