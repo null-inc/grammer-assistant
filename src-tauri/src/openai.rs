@@ -27,6 +27,13 @@ pub fn is_openai_configured() -> bool {
     has_api_key(api_key.as_deref())
 }
 
+#[tauri::command]
+pub async fn rewrite_with_openai(
+    _request: RewriteRequest,
+) -> Result<String, String> {
+    Err("OpenAI rewrite is not implemented yet".to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::{has_api_key, RewriteRequest, RewriteSetting};
