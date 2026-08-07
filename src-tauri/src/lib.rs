@@ -1,7 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+mod openai;
 #[cfg(target_os = "linux")]
 mod portal_shortcut;
-mod openai;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
