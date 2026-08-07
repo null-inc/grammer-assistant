@@ -1,16 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
-import { createReviewState } from "./core/review-state";
 import { ReviewState } from "./types/review-state.types";
 import { rewriteTextSetting } from "./types/rewriter.types";
 import { createClipboard } from "./services/clipboard";
 import { listenForGlobalShortcut } from "./services/global-shortcut";
+import { createAIRewriteService } from "./services/ai-service";
 import useCopy from "./core/copy";
+import useAIConfiguration from "./core/ai-config";
+import useAIRewrite from "./core/ai-rewrite";
 
 const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
 const clipboard = createClipboard();
+const aiService = createAIRewriteService();
 const { copyClipboardText, readClipboardText, copyStatus } = useCopy(clipboard);
+const { checkConfiguration, configurationStatus } =
+  useAIConfiguration(aiService);
+const { rewrite, rewrittenText, status, errorMessage } =
+  useAIRewrite(aiService);
 
 const editedText = ref("");
 const userInput = ref("");
@@ -29,11 +36,34 @@ const activeText = computed({
   },
 });
 
-function onSubmit() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  // greetMsg.value = await invoke("greet", { name: name.value });
-  reviewState.value = createReviewState(userInput.value, rewriteSetting.value);
-  editedText.value = reviewState.value.rewrittenText;
+const rewriteDisabled = computed(
+  () =>
+    configurationStatus.value !== "configured" ||
+    status.value === "loading" ||
+    activeText.value.trim() === "",
+);
+
+async function onSubmit() {
+  if (status.value === "loading") return;
+
+  const originalText = activeText.value;
+  const selectedSetting = rewriteSetting.value;
+
+  userInput.value = originalText;
+  editedText.value = "";
+  reviewState.value = null;
+
+  await rewrite({ text: originalText, setting: selectedSetting });
+
+  if (status.value !== "success") return;
+
+  reviewState.value = {
+    originalText,
+    selectedSetting,
+    rewrittenText: rewrittenText.value,
+    errorMessage: "",
+  };
+  editedText.value = rewrittenText.value;
 }
 
 async function handleCopy() {
@@ -68,6 +98,7 @@ async function handleShortcut() {
 let unlistenShortcut: (() => void) | undefined;
 
 onMounted(async () => {
+  await checkConfiguration();
   unlistenShortcut = await listenForGlobalShortcut(handleShortcut);
 });
 
@@ -92,6 +123,7 @@ onUnmounted(() => {
           id="review-text"
           v-model="activeText"
           class="text-input"
+          :disabled="status === 'loading'"
           maxlength="500"
           rows="4"
         ></textarea>
@@ -100,7 +132,11 @@ onUnmounted(() => {
           <div class="mode-row">
             <label class="setting-field" for="rewrite-setting">
               <span class="field-label">Mode</span>
-              <select id="rewrite-setting" v-model="rewriteSetting">
+              <select
+                id="rewrite-setting"
+                v-model="rewriteSetting"
+                :disabled="status === 'loading'"
+              >
                 <option value="more-professional">More Professional</option>
                 <option value="more-concise">More Concise</option>
               </select>
@@ -108,6 +144,7 @@ onUnmounted(() => {
             <button
               class="secondary-action load-action"
               type="button"
+              :disabled="status === 'loading'"
               @click="handleLoadText"
             >
               Load
@@ -122,8 +159,40 @@ onUnmounted(() => {
             </p>
           </div>
 
+          <p
+            v-if="configurationStatus === 'checking'"
+            class="configuration-message"
+          >
+            Checking OpenAI configuration…
+          </p>
+          <p
+            v-if="configurationStatus === 'missing'"
+            class="configuration-message error-message"
+          >
+            OpenAI API key is not configured.
+          </p>
+          <p v-if="status === 'error'" class="error-message">
+            {{ errorMessage }}
+          </p>
+
+          <p class="privacy-notice">
+            Rewrites are sent to OpenAI for processing.
+          </p>
+
           <div class="action-buttons">
-            <button class="primary-action" type="submit">Rewrite</button>
+            <button
+              class="primary-action"
+              type="submit"
+              :disabled="rewriteDisabled"
+              :aria-label="status === 'loading' ? 'Rewriting text' : undefined"
+            >
+              <span
+                v-if="status === 'loading'"
+                class="loading-spinner"
+                aria-hidden="true"
+              ></span>
+              <span v-else>{{ status === "error" ? "Retry" : "Rewrite" }}</span>
+            </button>
             <button
               class="secondary-action"
               type="button"
@@ -345,6 +414,24 @@ select {
   white-space: nowrap;
 }
 
+.configuration-message,
+.error-message,
+.privacy-notice {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.configuration-message,
+.privacy-notice {
+  color: #725f4b;
+}
+
+.error-message {
+  color: #923e32;
+  font-weight: 700;
+}
+
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -357,6 +444,13 @@ button {
   padding: 0 12px;
   font-weight: 700;
   cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .load-action {
@@ -382,6 +476,17 @@ button {
   background: #604c33;
 }
 
+.loading-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 248, 231, 0.45);
+  border-top-color: #fff8e7;
+  border-radius: 50%;
+  vertical-align: middle;
+  animation: spin 0.7s linear infinite;
+}
+
 .secondary-action {
   border-color: #bcae91;
   color: #5b4a35;
@@ -400,6 +505,18 @@ button {
 button:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(49, 95, 138, 0.2);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation-duration: 1.4s;
+  }
 }
 
 .review-panel {
