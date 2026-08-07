@@ -29,7 +29,8 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             greet,
-            openai::is_openai_configured
+            openai::is_openai_configured,
+            openai::rewrite_with_openai
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application")
