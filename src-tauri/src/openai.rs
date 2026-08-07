@@ -1,10 +1,12 @@
+const OPENAI_API_KEY_ENV: &str = "OPENAI_API_KEY";
+
 fn has_api_key(value: Option<&str>) -> bool {
     value.is_some_and(|key| !key.trim().is_empty())
 }
 
 #[tauri::command]
 pub fn is_openai_configured() -> bool {
-    let api_key = std::env::var("OPEN_API_KEY").ok();
+    let api_key = std::env::var(OPENAI_API_KEY_ENV).ok();
 
     has_api_key(api_key.as_deref())
 }

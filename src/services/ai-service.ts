@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { AIConfiguration } from "../types/ai-config.types";
+import type { AIConfiguration } from "../types/ai-config.types";
 
 export function createAIRewriteService(): AIConfiguration {
   function isConfigured() {
