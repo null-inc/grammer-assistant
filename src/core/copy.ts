@@ -1,8 +1,13 @@
-import type { Clipboard, CopyStatus } from "../types/copy.types";
+import type {
+  Clipboard,
+  ClipboardReadStatus,
+  CopyStatus,
+} from "../types/copy.types";
 import { ref } from "vue";
 
 export default function useCopy(clipboard: Clipboard) {
   const copyStatus = ref<CopyStatus>("idle");
+  const readStatus = ref<ClipboardReadStatus>("idle");
 
   async function copyClipboardText(text: string) {
     copyStatus.value = "copying";
@@ -17,17 +22,27 @@ export default function useCopy(clipboard: Clipboard) {
   }
 
   async function readClipboardText(): Promise<string> {
+    readStatus.value = "reading";
+
     try {
-      return await clipboard.readText();
+      const text = await clipboard.readText();
+      readStatus.value = text === "" ? "empty" : "success";
+      return text;
     } catch {
-      console.error("Could not read clipboard");
+      readStatus.value = "error";
       return "";
     }
+  }
+
+  function clearReadStatus() {
+    readStatus.value = "idle";
   }
 
   return {
     copyClipboardText,
     readClipboardText,
     copyStatus,
+    readStatus,
+    clearReadStatus,
   };
 }

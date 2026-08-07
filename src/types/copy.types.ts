@@ -4,3 +4,6 @@ export type Clipboard = {
 };
 
 export type CopyStatus = "idle" | "copying" | "success" | "error";
+
+export type ClipboardReadStatus =
+  "idle" | "reading" | "success" | "empty" | "error";
