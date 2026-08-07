@@ -1,8 +1,8 @@
-# Grammar Assistant
+# Grammer Assistant
 
-Grammar Assistant is a small Linux-first Tauri application for rewriting short
-text with OpenAI. It keeps the user in control of the clipboard and never saves
-source text, rewritten text, or rewrite history.
+> Yes, **Grammer** is spelled that way on purpose.
+
+Grammer Assistant is a small Linux-first Tauri application for rewriting short text with OpenAI. It keeps the user in control of the clipboard and never saves source text, rewritten text, or rewrite history.
 
 The MVP workflow is:
 
