@@ -5,7 +5,9 @@ import typescriptEslint from "typescript-eslint";
 import eslintConfigPrettier from "eslint-config-prettier";
 
 export default typescriptEslint.config(
-  { ignores: ["**/*.d.ts", "**/coverage", "**/dist"] },
+  {
+    ignores: ["**/*.d.ts", "**/coverage", "**/dist", "src-tauri/target"],
+  },
   {
     extends: [
       eslint.configs.recommended,

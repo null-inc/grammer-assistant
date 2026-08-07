@@ -13,7 +13,13 @@ const reviewState = ref<ReviewState | null>(null);
 const rewriteSetting = ref<rewriteTextSetting>("more-professional");
 const clipboard = createClipboard();
 const aiService = createAIRewriteService();
-const { copyClipboardText, readClipboardText, copyStatus } = useCopy(clipboard);
+const {
+  copyClipboardText,
+  readClipboardText,
+  copyStatus,
+  readStatus,
+  clearReadStatus,
+} = useCopy(clipboard);
 const { checkConfiguration, configurationStatus } =
   useAIConfiguration(aiService);
 const { rewrite, rewrittenText, status, errorMessage } =
@@ -27,6 +33,8 @@ const activeText = computed({
     return reviewState.value ? editedText.value : userInput.value;
   },
   set(value: string) {
+    clearReadStatus();
+
     if (reviewState.value) {
       editedText.value = value;
       return;
@@ -75,19 +83,15 @@ async function handleCopy() {
 }
 
 async function handleLoadText() {
-  try {
-    const clipboardText = await readClipboardText();
+  if (readStatus.value === "reading") return;
 
-    if (clipboardText === "") {
-      throw new Error("clipboard empty");
-    }
+  const clipboardText = await readClipboardText();
 
-    userInput.value = clipboardText;
-    editedText.value = "";
-    reviewState.value = null;
-  } catch {
-    console.error("Could not read text");
-  }
+  if (readStatus.value !== "success") return;
+
+  userInput.value = clipboardText;
+  editedText.value = "";
+  reviewState.value = null;
 }
 
 async function handleShortcut() {
@@ -144,7 +148,7 @@ onUnmounted(() => {
             <button
               class="secondary-action load-action"
               type="button"
-              :disabled="status === 'loading'"
+              :disabled="status === 'loading' || readStatus === 'reading'"
               @click="handleLoadText"
             >
               Load
@@ -169,10 +173,19 @@ onUnmounted(() => {
             v-if="configurationStatus === 'missing'"
             class="configuration-message error-message"
           >
-            OpenAI API key is not configured.
+            Set OPENAI_API_KEY in the app environment, then restart the app.
           </p>
           <p v-if="status === 'error'" class="error-message">
             {{ errorMessage }}
+          </p>
+          <p v-if="readStatus === 'reading'" class="configuration-message">
+            Loading clipboard…
+          </p>
+          <p v-if="readStatus === 'empty'" class="error-message">
+            Clipboard is empty. Copy some text and try again.
+          </p>
+          <p v-if="readStatus === 'error'" class="error-message">
+            Could not read the clipboard. Please try again.
           </p>
 
           <p class="privacy-notice">

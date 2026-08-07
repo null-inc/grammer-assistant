@@ -73,8 +73,21 @@ describe("Copy", () => {
       readText: vi.fn().mockRejectedValue(new Error("No permission")),
     };
 
-    const { readClipboardText } = useCopy(clipboard);
+    const { readClipboardText, readStatus } = useCopy(clipboard);
 
     await expect(readClipboardText()).resolves.toBe("");
+    expect(readStatus.value).toBe("error");
+  });
+
+  it("reports when the clipboard is empty", async () => {
+    const clipboard = {
+      writeText: vi.fn().mockResolvedValue(undefined),
+      readText: vi.fn().mockResolvedValue(""),
+    };
+
+    const { readClipboardText, readStatus } = useCopy(clipboard);
+
+    await expect(readClipboardText()).resolves.toBe("");
+    expect(readStatus.value).toBe("empty");
   });
 });
