@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[cfg(target_os = "linux")]
 mod portal_shortcut;
+mod openai;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -26,7 +27,10 @@ pub fn run() {
         })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            openai::is_openai_configured
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application")
 }
