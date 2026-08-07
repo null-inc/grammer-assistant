@@ -4,7 +4,7 @@ use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 const OPENAI_API_KEY_ENV: &str = "OPENAI_API_KEY";
-const OPENAI_MODEL: &str = "gpt-5.6-luna";
+const OPENAI_MODEL: &str = "gpt-5-nano";
 const OPENAI_RESPONSES_URL: &str = "https://api.openai.com/v1/responses";
 const MAX_TEXT_CHARACTERS: usize = 500;
 const MAX_OUTPUT_TOKENS: u16 = 256;
@@ -106,7 +106,7 @@ fn build_openai_request(request: &RewriteRequest) -> OpenAiRequest<'_> {
         instructions: instructions_for(&request.setting),
         input: &request.text,
         store: false,
-        reasoning: ReasoningConfig { effort: "none" },
+        reasoning: ReasoningConfig { effort: "minimal" },
         max_output_tokens: MAX_OUTPUT_TOKENS,
     }
 }
@@ -242,10 +242,10 @@ mod tests {
         let body = build_openai_request(&request);
         let json = serde_json::to_value(body).expect("request body should serialize");
 
-        assert_eq!(json["model"], "gpt-5.6-luna");
+        assert_eq!(json["model"], "gpt-5-nano");
         assert_eq!(json["input"], "hej jag behöver hjälp");
         assert_eq!(json["store"], false);
-        assert_eq!(json["reasoning"]["effort"], "none");
+        assert_eq!(json["reasoning"]["effort"], "minimal");
         assert_eq!(json["max_output_tokens"], 256);
     }
 
